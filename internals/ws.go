@@ -4,18 +4,22 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
 type WsConn struct {
+	ID   string
 	WS   *websocket.Conn
 	send chan []byte
+	hub  *Hub
 }
 
-func NewWsConn(wsConn *websocket.Conn) *WsConn {
+func NewWsConn(h *Hub) *WsConn {
 	return &WsConn{
-		WS:   wsConn,
+		ID:   uuid.New().String(),
 		send: make(chan []byte),
+		hub:  h,
 	}
 }
 
@@ -37,8 +41,8 @@ func (wc *WsConn) HandleWSConnection(w http.ResponseWriter, r *http.Request) {
 		log.Println("failed to upgrade connection")
 		return
 	}
-
 	wc.WS = conn
+	wc.hub.register <- wc
 
 	go func() {
 		for msg := range wc.send {
@@ -56,13 +60,21 @@ func (wc *WsConn) HandleWSConnection(w http.ResponseWriter, r *http.Request) {
 }
 
 // readPump reads incoming messages from the WebSocket connection
+// and unregisters the client if connection is close
 func (wc *WsConn) readPump() {
+	defer func() {
+		wc.hub.unregister <- wc
+		wc.WS.Close()
+
+	}()
+
 	for {
-		_, _, err := wc.WS.ReadMessage()
+		_, msg, err := wc.WS.ReadMessage()
 		if err != nil {
 			log.Println("failed to read message:", err)
 			break
 		}
-
+		wc.hub.broadcast <- msg
 	}
+
 }
