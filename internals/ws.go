@@ -1,6 +1,7 @@
 package internals
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 
@@ -23,6 +24,12 @@ func NewWsConn(h *Hub) *WsConn {
 	}
 }
 
+var tmpl *template.Template
+
+func init() {
+	tmpl = template.Must(template.ParseFiles("template/index.html"))
+}
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 	ReadBufferSize:  1024,
@@ -31,8 +38,17 @@ var upgrader = websocket.Upgrader{
 
 func (wc *WsConn) Route() *http.ServeMux {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/", wc.Index)
 	mux.HandleFunc("/ws", wc.HandleWSConnection)
 	return mux
+}
+
+func (wc *WsConn) Index(w http.ResponseWriter, r *http.Request) {
+	err := tmpl.ExecuteTemplate(w, "index.html", nil)
+	if err != nil {
+		log.Println("template didn't execute", nil)
+	}
+
 }
 
 func (wc *WsConn) HandleWSConnection(w http.ResponseWriter, r *http.Request) {
