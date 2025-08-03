@@ -6,6 +6,13 @@ let peerConnection;
 let ws;
 let isStreamer = false; 
 
+
+async function startVideoCall() {
+  isStreamer = true;
+  await startCamera();
+  setupWSConnection();
+}
+
 //startCamera starts camera only if user gives permission
 async function startCamera() {
   try {
