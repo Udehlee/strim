@@ -40,6 +40,7 @@ func (wc *WsConn) Route() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", wc.Index)
 	mux.HandleFunc("/ws", wc.HandleWSConnection)
+	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 	return mux
 }
 
