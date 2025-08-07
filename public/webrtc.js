@@ -1,17 +1,20 @@
 const ownVideo = document.getElementById("ownVideo");
 const peerVideo = document.getElementById("peerVideo");
+const shareLink = document.getElementById("shareLink");
 
 let localStream;
 let peerConnection;
 let ws;
+let roomId;
 let isStreamer = false; 
-
 
 async function startVideoCall() {
   isStreamer = true;
   await startCamera();
-  setupWSConnection();
+  generateLink(); 
+  setupWSConnection(roomId);
 }
+
 
 //startCamera starts camera only if user gives permission
 async function startCamera() {
@@ -50,7 +53,7 @@ function connectPeer() {
 
 // setupWSConnection opens WebSocket connection and handles messages between peers
 function setupWSConnection() {
-  ws = new WebSocket(`ws://localhost:8080/ws`);
+  ws = new WebSocket(`ws://localhost:8080/ws?room=` + roomId);
 
   ws.onmessage = async (event) => {
     const data = JSON.parse(event.data);
@@ -64,6 +67,7 @@ function setupWSConnection() {
       case "answer":
         if (isStreamer) {
           await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+          shareLink.parentElement.style.display = "block";
         }
         break;
       case "candidate":
@@ -112,3 +116,38 @@ async function handleOffer(offer) {
   const json = JSON.stringify(msg)
   ws.send(json)
 }
+
+//generateLink generates a unique link with a room ID and displays it
+function generateLink() {
+  roomId = location.hash.slice(1) || crypto.randomUUID();
+  location.hash = roomId;
+
+  const link = `${location.origin}${location.pathname}#${roomId}`;
+  shareLink.textContent = link;
+  shareLink.parentElement.style.display = "block";
+}
+
+//copyLink Copies the generated link to the clipboard
+function copyLink() {
+  const text = shareLink.textContent;
+  navigator.clipboard.writeText(text)
+    .then(() => 
+      alert("Link copied to clipboard"))
+    .catch(() =>
+       alert("Failed to copy link"));
+}
+
+//endCall ends the video call and cleans up media streams and connection
+function endCall() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+
+  if (peerConnection) {
+    peerConnection.close();
+  }
+  ownVideo.srcObject = null;
+  peerVideo.srcObject = null;
+  alert("Call ended");
+}
+
