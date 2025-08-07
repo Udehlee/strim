@@ -1,13 +1,42 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <title>strim</title>
+</head>
+<body>
+  <video id="ownVideo" autoplay muted></video>
+  <video id="peerVideo" autoplay></video>
+  <br>
+  <button onclick="startVideoCall()">Start Video Call</button>
+  <button onclick="endCall()">End Call</button>
+
+<p id="shareContainer" style="display: none;">
+  Share this link: <span id="shareLink"></span>
+  <button onclick="copyRoomLink()">Copy</button>
+</p>
+
+  <script src="/public/webrtc.js"></script>
+</body>
+</html> -->
+
 <!DOCTYPE html>
 <html>
 <head>
   <title>strim</title>
 </head>
 <body>
-  <video id="ownVideo" autoplay muted playsinline></video>
-  <video id="peerVideo" autoplay playsinline></video>
+  <video id="ownVideo" autoplay muted width="300"></video>
+  <video id="peerVideo" autoplay width="300"></video>
   <br>
+
   <button onclick="startVideoCall()">Start Video Call</button>
+  <button onclick="endCall()">End Call</button>
+
+  <p id="shareContainer" style="display: none;">
+    <p> Share this link: </p>
+    <a id="shareLink" href="#" target="_blank"></a>
+    <button onclick="copyLink()">Copy</button>
+  </p>
 
   <script src="/public/webrtc.js"></script>
 </body>
