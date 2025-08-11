@@ -13,8 +13,8 @@ async function startVideoCall() {
   await startCamera();
   generateLink(); 
   setupWSConnection(roomId);
+  
 }
-
 
 //startCamera starts camera only if user gives permission
 async function startCamera() {
@@ -33,7 +33,6 @@ async function startCamera() {
 // connectPeer creates a peer connection and shows the other peer's video
 function connectPeer() {
   peerConnection = new RTCPeerConnection();
-
   peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
       const msg = {
@@ -54,7 +53,6 @@ function connectPeer() {
 // setupWSConnection opens WebSocket connection and handles messages between peers
 function setupWSConnection() {
   ws = new WebSocket(`ws://localhost:8080/ws?room=` + roomId);
-
   ws.onmessage = async (event) => {
     const data = JSON.parse(event.data);
 
@@ -150,4 +148,6 @@ function endCall() {
   peerVideo.srcObject = null;
   alert("Call ended");
 }
+
+
 
